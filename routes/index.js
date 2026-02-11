@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { ensureAuthenticated } = require('../middleware/auth');
 const { getUserApps } = require('../utils/okta');
+const { getUserSetting } = require('../utils/userSettings');
 
 /**
  * Home page - displays user's applications
@@ -20,12 +21,16 @@ router.get('/', ensureAuthenticated, async (req, res) => {
       // Continue rendering with empty apps array
     }
 
+    // Load security image from local settings
+    const securityImage = await getUserSetting(userInfo.sub, 'securityImage');
+
     res.render('home', {
       title: 'My Applications',
       user: userInfo,
       isAuthenticated: true,
       apps: apps,
-      darkMode: req.session.darkMode || false
+      darkMode: req.session.darkMode || false,
+      securityImage: securityImage
     });
   } catch (error) {
     console.error('Home page error:', error);

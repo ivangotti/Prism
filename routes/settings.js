@@ -3,6 +3,7 @@ const router = express.Router();
 const { ensureAuthenticated } = require('../middleware/auth');
 const { ensureStepUpMfa } = require('../middleware/stepUpMfa');
 const { getUserFactors, enrollFactor, removeFactor } = require('../utils/okta');
+const { getUserSetting } = require('../utils/userSettings');
 const axios = require('axios');
 
 /**
@@ -38,6 +39,9 @@ router.get('/', ensureAuthenticated, ensureStepUpMfa, async (req, res) => {
     // Fetch enrolled factors
     const factors = await getFactors(accessToken, userInfo.sub);
 
+    // Load security image from local settings
+    const securityImage = await getUserSetting(userInfo.sub, 'securityImage');
+
     res.render('settings', {
       title: 'Authenticator Settings',
       user: userInfo,
@@ -46,7 +50,8 @@ router.get('/', ensureAuthenticated, ensureStepUpMfa, async (req, res) => {
       success: req.query.success,
       error: req.query.error,
       enrollmentData: req.session.enrollmentData || null,
-      darkMode: req.session.darkMode || false
+      darkMode: req.session.darkMode || false,
+      securityImage: securityImage
     });
 
     // Clear enrollment data after rendering

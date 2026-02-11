@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { ensureAuthenticated } = require('../middleware/auth');
+const { getUserSetting } = require('../utils/userSettings');
 
 /**
  * Decode JWT token (without verification - for display only)
@@ -29,9 +30,10 @@ function decodeJWT(token) {
 /**
  * GET tokens page
  */
-router.get('/', ensureAuthenticated, (req, res) => {
+router.get('/', ensureAuthenticated, async (req, res) => {
   try {
     const tokens = req.userContext?.tokens || {};
+    const userInfo = req.userContext.userinfo;
 
     // Decode tokens
     const decodedAccessToken = tokens.access_token ? decodeJWT(tokens.access_token) : null;
@@ -42,6 +44,9 @@ router.get('/', ensureAuthenticated, (req, res) => {
     const now = Math.floor(Date.now() / 1000);
     const accessTokenExp = decodedAccessToken?.payload?.exp;
     const idTokenExp = decodedIdToken?.payload?.exp;
+
+    // Load security image from local settings
+    const securityImage = await getUserSetting(userInfo.sub, 'securityImage');
 
     res.render('tokens', {
       title: 'JWT Tokens',
@@ -71,7 +76,8 @@ router.get('/', ensureAuthenticated, (req, res) => {
           remaining: idTokenExp - now
         } : null
       },
-      darkMode: req.session.darkMode || false
+      darkMode: req.session.darkMode || false,
+      securityImage: securityImage
     });
   } catch (error) {
     console.error('Tokens page error:', error);
