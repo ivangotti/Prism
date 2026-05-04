@@ -1,4 +1,4 @@
-# Node.js Prism with Okta Authentication
+Okta Customer Identity Solution external user portal
 
 A modern, professional user portal built with Node.js and Express that provides secure authentication using Okta's OIDC redirect flow. Users can view their applications, edit their profile, and manage their authenticators through a clean, responsive interface.
 
